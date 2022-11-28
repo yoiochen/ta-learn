@@ -1,5 +1,6 @@
 import os
 from decimal import Decimal
+from print_table import Table
 
 
 
@@ -20,7 +21,7 @@ def read_symbol_markets(symbol):
                 "open": row[1],
                 "high": row[2],
                 "low": row[3],
-                "close": row[4],
+                "close": Decimal(row[4]),
                 "volume": row[5],
                 "change": (Decimal(row[4]) - Decimal(row[1])) / Decimal(row[1]) * 100
             })
@@ -33,25 +34,77 @@ def get_market_by_time(markets, time):
     return filter_market[0]
 
 def main():
-    SYMBOL1 = "BTC-BUSD"
-    SYMBOL2= "ETH-BUSD"
+    SYMBOL0 = "BTC-BUSD"
+    SYMBOL1= "ETH-BUSD"
+    # 投入币种
+    INVEST_SYMBOL = "BTC-BUSD"
+    INVEST_AMOUNT = Decimal(1)
+
+    token0 = SYMBOL0.split('-')[0]
+    token1 = SYMBOL1.split('-')[0]
+    markets0 = read_symbol_markets(SYMBOL0)
     markets1 = read_symbol_markets(SYMBOL1)
-    markets2 = read_symbol_markets(SYMBOL2)
-    time_list = map(lambda x: x["time"], markets1)
+
+    time_list = map(lambda x: x["time"], markets0)
+
+    # 期初金额
+    initial_amount0 = Decimal(0)
+    initial_amount1 = Decimal(0)
+    # 期末金额
+    final_amount0 = INVEST_AMOUNT if SYMBOL0 == INVEST_SYMBOL else Decimal(0)
+    final_amount1 = INVEST_AMOUNT if SYMBOL1 == INVEST_SYMBOL else Decimal(0)
+
+    tb_title = [
+                'time', 
+                f'{token0} open', 
+                f'{token0} close', 
+                f'{token0} change', 
+                f'{token1} open', 
+                f'{token1} close', 
+                f'{token1} change', 
+                'invest symbol', 
+                'initial', 
+                'final'
+            ]
+    tb = Table(numberOfCols=len(tb_title)).head(tb_title)
 
     for time in time_list:
+        market0 = get_market_by_time(markets0, time)
+        if market0 is None:
+            print(f">>>> can not find [{time}] market for {SYMBOL0}")
+            continue
         market1 = get_market_by_time(markets1, time)
         if market1 is None:
             print(f">>>> can not find [{time}] market for {SYMBOL1}")
             continue
-        market2 = get_market_by_time(markets2, time)
-        if market2 is None:
-            print(f">>>> can not find [{time}] market for {SYMBOL2}")
-            continue
+        change0 = market0['change']
         change1 = market1['change']
-        change2 = market2['change']
-        choose = SYMBOL1 if change1 < change2 else SYMBOL2
-        print(f"{time} {SYMBOL1} change {change1}, {SYMBOL2} change {change2}, result: {choose}")
+        choose = SYMBOL0 if change0 < change1 else SYMBOL1
 
+        # 模拟投资
+        initial_amount0 = final_amount0
+        initial_amount1 = final_amount1
+        if choose == SYMBOL0 and initial_amount1 > 0:
+            final_amount0 = initial_amount1 * market1['close'] / market0['close']
+            final_amount1 = Decimal(0)
+
+        if choose == SYMBOL1 and initial_amount0 > 0:
+            final_amount1 = initial_amount0 * market0['close'] / market1['close']
+            final_amount0 = Decimal(0)
+        
+        tb.row(
+            [
+                time, 
+                market0['open'],
+                market0['close'],
+                f"{round(change0, 4)}%", 
+                market1['open'],
+                market1['close'],
+                f"{round(change1, 4)}%", 
+                choose.split('-')[0], 
+                f"{round(initial_amount0, 4)} {token0} + {round(initial_amount1, 4)} {token1}", f"{round(final_amount0, 4)} {token0} + {round(final_amount1, 4)} {token1}"]
+        )
+        # print(f"{time} {SYMBOL0} change {change0}, {SYMBOL1} change {change1}, result: {choose.split('-')[0]}, initial: {initial_amount0} {SYMBOL0} + {initial_amount1} {SYMBOL1}, final: {final_amount0} {SYMBOL0} + {final_amount1} {SYMBOL1}")
+    tb.printTable()
 main()
 
