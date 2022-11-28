@@ -1,7 +1,7 @@
 import os
 from decimal import Decimal
 from print_table import Table
-
+import csv_utils
 
 
 def read_symbol_markets(symbol):
@@ -33,15 +33,19 @@ def get_market_by_time(markets, time):
         return None
     return filter_market[0]
 
+def print_t():
+    print("")
+
 def main():
     SYMBOL0 = "BTC-BUSD"
     SYMBOL1= "ETH-BUSD"
     # 投入币种
-    INVEST_SYMBOL = "BTC-BUSD"
-    INVEST_AMOUNT = Decimal(1)
+    INVEST_SYMBOL = "ETH-BUSD"
+    INVEST_AMOUNT = Decimal(10)
 
     token0 = SYMBOL0.split('-')[0]
     token1 = SYMBOL1.split('-')[0]
+    invest_token = INVEST_SYMBOL.split('-')[0]
     markets0 = read_symbol_markets(SYMBOL0)
     markets1 = read_symbol_markets(SYMBOL1)
 
@@ -54,19 +58,7 @@ def main():
     final_amount0 = INVEST_AMOUNT if SYMBOL0 == INVEST_SYMBOL else Decimal(0)
     final_amount1 = INVEST_AMOUNT if SYMBOL1 == INVEST_SYMBOL else Decimal(0)
 
-    tb_title = [
-                'time', 
-                f'{token0} open', 
-                f'{token0} close', 
-                f'{token0} change', 
-                f'{token1} open', 
-                f'{token1} close', 
-                f'{token1} change', 
-                'invest symbol', 
-                'initial', 
-                'final'
-            ]
-    tb = Table(numberOfCols=len(tb_title)).head(tb_title)
+    results = []
 
     for time in time_list:
         market0 = get_market_by_time(markets0, time)
@@ -92,19 +84,48 @@ def main():
             final_amount1 = initial_amount0 * market0['close'] / market1['close']
             final_amount0 = Decimal(0)
         
-        tb.row(
-            [
-                time, 
-                market0['open'],
-                market0['close'],
-                f"{round(change0, 4)}%", 
-                market1['open'],
-                market1['close'],
-                f"{round(change1, 4)}%", 
-                choose.split('-')[0], 
-                f"{round(initial_amount0, 4)} {token0} + {round(initial_amount1, 4)} {token1}", f"{round(final_amount0, 4)} {token0} + {round(final_amount1, 4)} {token1}"]
+        results.append(
+            {
+                 'time': time, 
+                f'{token0} open': market0['open'], 
+                f'{token0} close': market0['close'], 
+                f'{token0} change': f"{round(change0, 4)}%", 
+                f'{token1} open': market1['open'], 
+                f'{token1} close': market1['close'], 
+                f'{token1} change': f"{round(change1, 4)}%", 
+                'invest symbol': choose.split('-')[0], 
+                'initial': f"{round(initial_amount0, 4)} {token0} + {round(initial_amount1, 4)} {token1}",
+                'final': f"{round(final_amount0, 4)} {token0} + {round(final_amount1, 4)} {token1}"
+            }
         )
+
         # print(f"{time} {SYMBOL0} change {change0}, {SYMBOL1} change {change1}, result: {choose.split('-')[0]}, initial: {initial_amount0} {SYMBOL0} + {initial_amount1} {SYMBOL1}, final: {final_amount0} {SYMBOL0} + {final_amount1} {SYMBOL1}")
-    tb.printTable()
+    tb_title = [
+                'time', 
+                f'{token0} open', 
+                f'{token0} close', 
+                f'{token0} change', 
+                f'{token1} open', 
+                f'{token1} close', 
+                f'{token1} change', 
+                'invest symbol', 
+                'initial', 
+                'final'
+            ]
+
+    print(list(results[0].keys()))
+
+    csv_utils.write(
+        './result', 
+        f'result_{INVEST_AMOUNT}_{invest_token}', 
+        list(results[0].keys()), 
+        list(map(lambda x: list(x.values()), results))
+    )
+
+    # tb = Table(numberOfCols=len(tb_title)).head(tb_title)
+    # for item in list(map(lambda x: list(x.values()), results)):
+    #     tb.row(item)
+    # tb.printTable()
+
 main()
 
