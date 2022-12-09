@@ -11,6 +11,7 @@ python = "^3.11"
 pandas = "^1.5.1"
 ccxt = "^2.1.93"
 openai = "^0.25.0"
+python-dotenv = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]
