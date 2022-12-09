@@ -2,3 +2,5 @@ data/
 result/
 **/.DS_Store
 **/__pycache__/
+
+**/.idea/
