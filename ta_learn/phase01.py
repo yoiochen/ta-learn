@@ -71,6 +71,7 @@ def main():
         target_symbols = [
             "BTC/BUSD",
             "ETH/BUSD",
+            "BNB/BUSD",
         ]
         print(">>>> target symbols: {}".format(len(target_symbols)))
 

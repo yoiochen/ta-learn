@@ -12,6 +12,7 @@ pandas = "^1.5.1"
 ccxt = "^2.1.93"
 openai = "^0.25.0"
 python-dotenv = "^0.21.0"
+plotly = "^5.11.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,3 +21,10 @@ black = "^22.10.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+#设置poetry包管理工具的自定义pypi镜像源配置
+[[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple"
+default = true
