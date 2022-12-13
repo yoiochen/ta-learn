@@ -28,3 +28,7 @@ build-backend = "poetry.core.masonry.api"
 name = "aliyun"
 url = "http://mirrors.aliyun.com/pypi/simple"
 default = true
+
+# Python-style entrypoints and scripts are easily expressed
+[tool.poetry.scripts]
+nihao = "nihao:main"
