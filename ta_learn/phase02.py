@@ -12,17 +12,17 @@ DATA_KLINE_DIR = "../data/kline"
 DATA_RESULT_DIR = "../data/result"
 TOKEN0 = "BTC"
 TOKEN1 = "ETH"
-TOKEN_STABLE = "BUSD"
+TOKEN_STABLE = "USDT"
 SYMBOL0 = f"{TOKEN0}-{TOKEN_STABLE}"
 SYMBOL1 = f"{TOKEN1}-{TOKEN_STABLE}"
 # 投入稳定币U数量
 INVEST_STABLE_AMOUNT = 10000
-N = 10
+N = 1
 ############## config ##############
 
 
 def read_symbol_markets(symbol):
-    df = pd.read_csv(f'{DATA_KLINE_DIR}/{symbol}.csv')
+    df = pd.read_csv(f'{DATA_KLINE_DIR}/{symbol}_1d.csv')
     markets = df.to_dict('records')
     result = []
     for item in markets:

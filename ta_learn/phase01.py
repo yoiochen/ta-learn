@@ -1,5 +1,6 @@
 import ccxt
 import os
+import pandas as pd
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +13,7 @@ phase 1
 
 ############## config ##############
 DATA_DIR = "../data/kline"
-MARKET_INTERVAL = "1d"
+TIMEFRAME = "1d"
 MAX_THREADS = 5
 ############## config ##############
 
@@ -31,8 +32,28 @@ def get_all_symbols(exchange):
     return exchange.symbols
 
 
-def get_markets(exchange, symbol, intervalTag):
-    return exchange.fetch_ohlcv(symbol, intervalTag)
+def get_markets(exchange, symbol, timeframe, fromTimestamp=0):
+    limit = 1000
+    result = []
+    len_result = limit
+    while len_result == limit:
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit, params={"startTime": fromTimestamp})
+        result += ohlcv
+        start = ohlcv[0]
+        end = ohlcv[-1]
+        len_result = len(ohlcv)
+        fromTimestamp = end[0] + 1
+        print(f">>>> get {len_result} market for {symbol} from {start[0]}({format_time(start[0])}) to {end[0]}({format_time(end[0])})")
+
+    return result
+
+
+def format_time(timestamp):
+    if len(str(timestamp)) > 10:
+        timestamp = timestamp / 1000
+    return datetime.fromtimestamp(
+        timestamp, tz=ZoneInfo("Asia/Shanghai")
+    ).strftime('%Y-%m-%d %H:%M:%S')
 
 
 def save_markets(dir_name, symbol, markets):
@@ -41,44 +62,44 @@ def save_markets(dir_name, symbol, markets):
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
 
-    with open(os.path.join(dir_name, f"{symbol_name}.csv"), "w") as f:
-        f.write("time,open,high,low,close,volume")
+    with open(os.path.join(dir_name, f"{symbol_name}_{TIMEFRAME}.csv"), "w") as f:
+        f.write("timestamp,time,open,high,low,close,volume")
         f.write("\n")
         for row in markets:
-            formated_time = datetime.fromtimestamp(
-                row[0] / 1000, tz=ZoneInfo("Asia/Shanghai")
-            )
             line = (
-                f"{formated_time.strftime('%Y-%m-%d %H:%M:%S')},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]}"
+                f"{row[0]},{format_time(row[0])},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]}"
             )
             f.write(line)
             f.write("\n")
     print(f">>>> save {symbol_name} markets success")
 
 
-def job(exchange, symbol, intervalTag):
-    markets = get_markets(exchange, symbol, intervalTag)
-    print(f">>>> [{threading.current_thread().name}] get {len(markets)} market for {symbol}")
+def job(exchange, symbol):
+    markets = get_markets(exchange, symbol, TIMEFRAME)
+    len_m = len(markets)
+    start = markets[0]
+    end = markets[-1]
+    print(f">>>> [{threading.current_thread().name}] get {len_m} market for {symbol} from {start[0]}({format_time(start[0])}) to {end[0]}({format_time(end[0])})")
     save_markets(DATA_DIR, symbol, markets)
 
 
 def main():
     try:
-        all_symbols = get_all_symbols(exchange)
-        print(">>>> get {} symbols".format(len(all_symbols)))
+        # all_symbols = get_all_symbols(exchange)
+        # print(">>>> get {} symbols".format(len(all_symbols)))
 
         # target_symbols = list(filter(lambda x: x.endswith("USDT") or x.endswith("BUSD"), all_symbols))
         target_symbols = [
-            "BTC/BUSD",
-            "ETH/BUSD",
-            "BNB/BUSD",
+            "BTC/USDT",
+            "ETH/USDT",
+            "BNB/USDT",
         ]
         print(">>>> target symbols: {}".format(len(target_symbols)))
 
         pool = ThreadPoolExecutor(MAX_THREADS, "markets_fetch_thread")
 
         for symbol in target_symbols:
-            pool.submit(job, exchange, symbol, MARKET_INTERVAL)
+            pool.submit(job, exchange, symbol)
 
     except Exception as e:
         print(e)

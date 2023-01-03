@@ -2,23 +2,27 @@ import os
 import sys
 import importlib
 import pandas as pd
-import builtins
 
+"""
+SM: script manager 脚本管理器CLI
+触发命令sm
+sm [script name] [options]
+"""
 
 SCRIPT_DIRS = [
-    "/Users/chenyong/python_project/ta-learn/script",
+    "/Users/chenyong/PycharmProjects/ta-learn/script",
 ]
 
 
 def load_scripts(dirs=[]):
     does_not_exist = [directory for directory in dirs if not os.path.exists(directory)]
+    exist = [directory for directory in dirs if os.path.exists(directory)]
     if len(does_not_exist) > 0:
-        print("The following script directories do not exist:")
+        print(">>>> The following script directories do not exist:")
         print(*does_not_exist, sep="\n")
-        return
 
     results = []
-    for dir in dirs:
+    for dir in exist:
         sys.path.append(dir)
         for file in os.listdir(dir):
             if not file.endswith(".py"):
@@ -31,14 +35,16 @@ def load_scripts(dirs=[]):
                 {
                     "name": module_name,
                     "module": module,
-                    "description": description
+                    "description": description,
+                    "path": os.path.join(dir, file),
+                    "dir": dir
                 }
             )
     return results
 
 
 def print_scripts(scripts):
-    df = pd.DataFrame(scripts)
+    df = pd.DataFrame(scripts, columns=['name', 'description'])
     print(df.to_string())
 
 
@@ -50,7 +56,7 @@ def config():
 def main():
     scripts = load_scripts(SCRIPT_DIRS)
     args = sys.argv
-    print(args)
+    # print(args)
     if len(args) == 1:
         print_scripts(scripts)
     else:
@@ -60,8 +66,8 @@ def main():
             print(f'>>>> can not find any script named: {script_target}!!!')
         elif len(scripts_filtered) == 1:
             globals()['xxxx'] = config
-            print(dir(globals()))
-            getattr(scripts_filtered[0]['module'], "run", scripts_filtered[0]['module'].main)()
+            print(f">>>> run {scripts_filtered[0]['path']}")
+            getattr(scripts_filtered[0]['module'], "run")(config={}, options={})
         else:
             print_scripts(scripts_filtered)
         pass

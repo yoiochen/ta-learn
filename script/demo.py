@@ -1,8 +1,6 @@
+description = "demo script"
 
 
-description = "demo"
-
-
-async def run(config, options):
-    print("config", config)
-    print("options", options)
+def run(**args):
+    config = args['config']
+    options = args['options']

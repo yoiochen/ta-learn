@@ -31,4 +31,4 @@ default = true
 
 # Python-style entrypoints and scripts are easily expressed
 [tool.poetry.scripts]
-nihao = "nihao:main"
+sm = "sm:main"
