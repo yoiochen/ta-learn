@@ -103,13 +103,13 @@ def main():
     do_invest(exchange, symbol, amount=amount, record_path="./records3.csv")
 
     ############# 测试代码保证余额全部卖出 #############
-    balance = exchange.fetch_balance()
-    balance_btc = balance['BTC']['total']
-    # balance_usdt = balance['USDT']['total']
-    # price = (100 - balance_usdt) / balance_btc
-    price = exchange.fetch_tickers(symbols=[symbol])[symbol]['ask']
-    print(f"价格 {price} 挂单 {balance_btc} BTC")
-    exchange.create_limit_sell_order(symbol, balance_btc, price)
+    # balance = exchange.fetch_balance()
+    # balance_btc = balance['BTC']['total']
+    # # balance_usdt = balance['USDT']['total']
+    # # price = (100 - balance_usdt) / balance_btc
+    # price = exchange.fetch_tickers(symbols=[symbol])[symbol]['ask']
+    # print(f"价格 {price} 挂单 {balance_btc} BTC")
+    # exchange.create_limit_sell_order(symbol, balance_btc, price)
     ############# 测试代码保证余额全部卖出 #############
 
 
