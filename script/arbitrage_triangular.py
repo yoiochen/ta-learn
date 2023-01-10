@@ -2,33 +2,9 @@ from common import timer_start, now_time_str
 import ccxt
 import pandas as pd
 import time
-import json
 from dotenv import dotenv_values
 
-config = {
-    **dotenv_values("../.env")
-}
-api_key = config['BINANCE_API_KEY']
-secret_key = config['BINANCE_SECRET_KEY']
-
-# 展示所有列
-pd.set_option('display.max_columns', None)
-
-current_milli_time = lambda: int(round(time.time() * 1000))
-
-exchange = ccxt.binance(
-    {
-        "proxies": {
-            "http": "http://127.0.0.1:7890",
-            "https": "http://127.0.0.1:7890",
-        },
-        "apiKey": config['BINANCE_API_KEY'],
-        "secret": config['BINANCE_SECRET_KEY']
-    }
-)
-
-markets = exchange.load_markets()
-fees = exchange.fetch_trading_fees()
+description = "三角套利"
 
 
 def get_common_base_list(markets, market_a, market_b):
@@ -62,11 +38,31 @@ def build_path(common_base_list, market_a, market_b):
 # def do_arbitrage():
 
 
-def main():
+def run(**args):
     """
     三角套利
     :return:
     """
+    config = {
+        **dotenv_values(".env")
+    }
+    # 展示所有列
+    pd.set_option('display.max_columns', None)
+    current_milli_time = lambda: int(round(time.time() * 1000))
+
+    exchange = ccxt.binance(
+        {
+            "proxies": {
+                "http": "http://127.0.0.1:7890",
+                "https": "http://127.0.0.1:7890",
+            },
+            "apiKey": config['BINANCE_API_KEY'],
+            "secret": config['BINANCE_SECRET_KEY']
+        }
+    )
+
+    markets = exchange.load_markets()
+    fees = exchange.fetch_trading_fees()
 
     market_a = "BTC"
     market_b = "ETH"
@@ -153,12 +149,6 @@ def main():
         print(f"{last['path']} min profit {last['profit']}")
 
         if len(df_result[df_result['profit'] > 0]) > 0:
-            df_result.to_csv(f"../data/result/result_arbitrage_triangular_{now_time_str()}.csv")
+            df_result.to_csv(f"./result_arbitrage_triangular_{now_time_str()}.csv")
 
     timer_start(do_path, 3)
-
-
-if __name__ == '__main__':
-    # main()
-    balance = exchange.fetch_balance()
-    print(json.dumps(balance))

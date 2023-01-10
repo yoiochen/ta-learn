@@ -13,7 +13,7 @@ phase 1
 
 ############## config ##############
 DATA_DIR = "../data/kline"
-TIMEFRAME = "1d"
+TIMEFRAME = "1w"
 MAX_THREADS = 5
 ############## config ##############
 
@@ -37,7 +37,7 @@ def get_markets(exchange, symbol, timeframe, fromTimestamp=0):
     result = []
     len_result = limit
     while len_result == limit:
-        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit, params={"startTime": fromTimestamp})
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit, params={"startTime": fromTimestamp})
         result += ohlcv
         start = ohlcv[0]
         end = ohlcv[-1]
@@ -91,8 +91,6 @@ def main():
         # target_symbols = list(filter(lambda x: x.endswith("USDT") or x.endswith("BUSD"), all_symbols))
         target_symbols = [
             "BTC/USDT",
-            "ETH/USDT",
-            "BNB/USDT",
         ]
         print(">>>> target symbols: {}".format(len(target_symbols)))
 

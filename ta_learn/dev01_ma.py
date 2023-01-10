@@ -7,10 +7,10 @@ import plotly.express as px
 DATA_KLINE_DIR = "../data/kline"
 DATA_RESULT_DIR = "../data/result"
 AMOUNT_INVEST = 10000
-SYMBOL_INVEST = "BNB-BUSD"
+SYMBOL_INVEST = "BNB-USDT"
 ############## config ##############
 
-df = pd.read_csv(f"{DATA_KLINE_DIR}/{SYMBOL_INVEST}.csv")
+df = pd.read_csv(f"{DATA_KLINE_DIR}/{SYMBOL_INVEST}_1d.csv")
 df['ma3'] = df['close'].rolling(3).mean()
 df['ma5'] = df['close'].rolling(5).mean()
 df['ma20'] = df['close'].rolling(20).mean()
